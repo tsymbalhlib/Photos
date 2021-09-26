@@ -14,12 +14,8 @@ class PhotoDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _currentPhoto = MutableLiveData<Photo>()
+    private val _currentPhoto = savedStateHandle.getLiveData<Photo>("photo")
     val currentPhoto: LiveData<Photo> = _currentPhoto
-
-    init {
-        _currentPhoto.value = savedStateHandle.get("photo")
-    }
 
     private val _currentUrl = MutableLiveData<Event<String?>>()
     val currentUrl: LiveData<Event<String?>> = _currentUrl
