@@ -2,7 +2,6 @@ package com.example.android.photos.repository
 
 import com.example.android.photos.R
 import com.example.android.photos.database.PhotoDatabaseDao
-import com.example.android.photos.database.PhotoEntity
 import com.example.android.photos.mappers.DatabaseMapper
 import com.example.android.photos.network.PhotoApiService
 import com.example.android.photos.network.PhotoNetwork
@@ -29,8 +28,8 @@ class RepositoryImpl @Inject constructor(
 ) : Repository {
 
     override fun getPhotosFromDb(): Flow<List<Photo>> {
-        return photoDatabaseDao.getPhotos().map { listPhoto ->
-            databaseMapper.asPhoto(listPhoto)
+        return photoDatabaseDao.getPhotos().map { list ->
+            databaseMapper.asPhoto(list)
         }
     }
 
@@ -40,9 +39,9 @@ class RepositoryImpl @Inject constructor(
             if (networkHelper.isNetworkConnected()) {
                 val response = loadPhotos()
                 if (response.isSuccessful) {
-                    response.body()?.let { listPhoto ->
-                        if (listPhoto.isNotEmpty()) {
-                            updatePhotos(networkMapper.asPhotoEntity(listPhoto))
+                    response.body()?.let { list ->
+                        if (list.isNotEmpty()) {
+                            updatePhotos(list)
                             emit(PhotoApiStatus.Success)
                         } else {
                             emit(PhotoApiStatus.Error(R.string.error_data_loading))
@@ -64,8 +63,8 @@ class RepositoryImpl @Inject constructor(
     }
 
     private suspend fun updatePhotos(
-        list: List<PhotoEntity>
+        list: List<PhotoNetwork>
     ) = withContext(Dispatchers.IO) {
-        photoDatabaseDao.insertPhotos(list)
+        photoDatabaseDao.insertPhotos(networkMapper.asPhotoEntity(list))
     }
 }
